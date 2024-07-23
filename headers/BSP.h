@@ -1,10 +1,15 @@
-# ifndef __BSP_H
-# define __BSP_H
+# ifndef __GENERAL_H
+# define __GENERAL_H
 
 # include <stdio.h>
 # include <stdint.h>
 # include <stdlib.h>
 # include <string.h>
+
+# endif
+
+# ifndef __BSP_H
+# define __BSP_H
 
 #define PDF_BLANK_START_PACKET 0x2
 #define SUPPID_TUNNELED_PACKET 0x0

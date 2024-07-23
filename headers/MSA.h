@@ -1,10 +1,15 @@
-# ifndef __MSA_H
-# define __MSA_H
+# ifndef __GENERAL_H
+# define __GENERAL_H
 
 # include <stdio.h>
 # include <stdint.h>
 # include <stdlib.h>
 # include <string.h>
+
+# endif
+
+# ifndef __MSA_H
+# define __MSA_H
 
 uint8_t calculate_hec(uint32_t);
 uint8_t calculate_ecc(uint32_t);

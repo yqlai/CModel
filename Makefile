@@ -5,7 +5,7 @@ OBJS = $(SRCS:.c=.o)
 all: main
 
 %.o: %.c headers/%.h
-	$(CC) $< -o $@
+	$(CC) $< -o $@ -nostartfiles
 
 main: $(OBJS)
-	$(CC) -o $@ $^ -mconsole
+	$(CC) -o $@ $^ 
