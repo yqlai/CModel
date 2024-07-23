@@ -194,6 +194,6 @@ int VDP_GEN(int argc, char *argv[])
 
 // int main(int argc, char *argv[])
 // {
-//     VDP_GEN(argc, argv);
+//     VDP_GEN(argc, argv); // Need the parameters
 //     return 0;
 // }
