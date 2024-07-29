@@ -3,7 +3,7 @@
 // Function to calculate HEC (Header Error Control)
 uint8_t calculate_hec(uint32_t header) {
     uint8_t hec = 0x00;
-    uint8_t poly = 0x07;
+    uint8_t poly = 0x07; 
     for (int bit = 31; bit >= 8; bit--) {
         hec ^= ((header >> bit) & 1) << 7;
         for (int i = 7; i >= 1; i--) {
@@ -27,7 +27,7 @@ uint8_t calculate_ecc(uint32_t header) {
     return ecc;
 }
 
-void hexStringToByteArray(const char *hexString, unsigned char *byteArray, int byteArraySize) {
+void hexStringToByteArray_MSA(const char *hexString, unsigned char *byteArray, int byteArraySize) {
     int hexStringLength = strlen(hexString);
     int i;
     for (i = 0; i < hexStringLength / 2 && i < byteArraySize; i++) {

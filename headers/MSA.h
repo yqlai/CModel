@@ -13,7 +13,7 @@
 
 uint8_t calculate_hec(uint32_t);
 uint8_t calculate_ecc(uint32_t);
-void hexStringToByteArray(const char *, unsigned char *, int);
+void hexStringToByteArray_MSA(const char *, unsigned char *, int);
 void printByteArrayToFile(unsigned char *, int, FILE* ); 
 
 

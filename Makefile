@@ -1,11 +1,12 @@
 CC = gcc
 SRCS = $(wildcard *.c)
 OBJS = $(SRCS:.c=.o)
+CFLAGS = -nostartfiles -Wall
 
 all: main
 
 %.o: %.c headers/%.h
-	$(CC) $< -o $@ -nostartfiles
+	$(CC) -c $< -o $@ $(CFLAGS)
 
 main: $(OBJS)
-	$(CC) -o $@ $^ 
+	$(CC) -o $@ $^

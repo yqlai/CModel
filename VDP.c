@@ -74,12 +74,12 @@ void fillPayload(unsigned char* payload, int length) {
 uint32_t generate_TU_set_Header(uint32_t EOC, uint32_t TU_type, uint32_t L, uint32_t Fill_Count, uint32_t Video_Count)
 {
     // Construct TU set Header
-    uint32_t TU_set_header = (calculate_ECC(HEC_INIT) << 0) |
-                             (Video_Count << 8) |
-                             (Fill_Count << 14) |
-                             (L << 28) |
-                             (TU_type << 29) |
-                             (EOC << 31);
+    uint32_t TU_set_header = ((calculate_ECC(HEC_INIT) & 0xFF) << 0) |
+                             ((Video_Count & 0x3F) << 8) |
+                             ((Fill_Count & 0x3FFF) << 14) |
+                             ((L & 0x1) << 28) |
+                             ((TU_type & 0x3) << 29) |
+                             ((EOC & 0x1) << 31);
     return TU_set_header;
 }
 
@@ -89,11 +89,11 @@ uint32_t *generate_TU_set_Headers(int argc, char *argv[])
     uint32_t *TU_set_headers = (uint32_t *)malloc(num_TU_sets * sizeof(uint32_t));
     for(int i=0 ; i<num_TU_sets ; i++)
     {
-        uint32_t EOC = atoi(argv[1 + i*5]);
-        uint32_t TU_type = atoi(argv[2 + i*5]);
-        uint32_t L = atoi(argv[3 + i*5]);
-        uint32_t Fill_Count = atoi(argv[4 + i*5]);
-        uint32_t Video_Count = atoi(argv[5 + i*5]);
+        uint32_t EOC = atoi(argv[2 + i*5]);
+        uint32_t TU_type = atoi(argv[3 + i*5]);
+        uint32_t L = atoi(argv[4 + i*5]);
+        uint32_t Fill_Count = atoi(argv[5 + i*5]);
+        uint32_t Video_Count = atoi(argv[6 + i*5]);
 
         TU_set_headers[i] = generate_TU_set_Header(EOC, TU_type, L, Fill_Count, Video_Count);
     }
@@ -117,12 +117,14 @@ void generate_Tunneled_VD_Packet(uint32_t USB4_header, uint32_t *TU_set_headers,
 {
     uint8_t tunHeader[4];
     uint8_t **tuSetHeaders;
+    uint8_t **payload;
+    uint32_t *payloadLengths;
     
     tunHeader[0] = (USB4_header >> 24) & 0xFF;
     tunHeader[1] = (USB4_header >> 16) & 0xFF;
     tunHeader[2] = (USB4_header >> 8) & 0xFF;
     tunHeader[3] = USB4_header & 0xFF;
-    
+
     tuSetHeaders = (uint8_t **)malloc(num_TU_sets * sizeof(uint8_t *));
     for(int i=0 ; i<num_TU_sets ; i++)
     {
@@ -131,30 +133,46 @@ void generate_Tunneled_VD_Packet(uint32_t USB4_header, uint32_t *TU_set_headers,
         tuSetHeaders[i][1] = (TU_set_headers[i] >> 16) & 0xFF;
         tuSetHeaders[i][2] = (TU_set_headers[i] >> 8) & 0xFF;
         tuSetHeaders[i][3] = TU_set_headers[i] & 0xFF;
-
-        // Calculate the total number of bytes for the payload
-        int totalVideoDataLength = calculateTotalVideoDataLength(num_TU_sets, (const unsigned char**)tuSetHeaders);
-        int totalPacketLength = 4 + (num_TU_sets * 4) + totalVideoDataLength;  // 4 bytes for Tunneled Packet Header + TU headers + Video data
-
-        //Update the Length field in the Tunneled Packet Header
-        tunHeader[2] = totalPacketLength - 4;  // Exclude the Tunneled Packet Header length
-
-        // Generate the payload
-        unsigned char payload[totalVideoDataLength];
-        fillPayload(payload, totalVideoDataLength);
-
-        // Output the final packet in hexadecimal format
-        char outputHex[totalPacketLength * 2 + 1];
-        bytesToHexString(tunHeader, 4, outputHex);
-        for (int i = 0; i < num_TU_sets; i++) {
-            bytesToHexString(tuSetHeaders[i], 4, outputHex + (4 * 2) + (i * 4 * 2));
-            free(tuSetHeaders[i]);  // Free allocated memory for TU set headers
     }
-    bytesToHexString(payload, totalVideoDataLength, outputHex + (4 * 2) + (num_TU_sets * 4 * 2));
+
+    // Calculate the total number of bytes for the payload
+    int totalVideoDataLength = calculateTotalVideoDataLength(num_TU_sets, (const unsigned char**)tuSetHeaders);
+    int totalPacketLength = 4 + (num_TU_sets * 4) + totalVideoDataLength;  // 4 bytes for Tunneled Packet Header + TU headers + Video data
+    tunHeader[2] = totalPacketLength - 4;  // Exclude the Tunneled Packet Header length
+
+    printf("Total Packet Length: %d\n", totalPacketLength);
+    char outputHex[totalPacketLength * 2 + 1];
+    bytesToHexString(tunHeader, 4, outputHex);
+    int bytes = 4;
+
+    // Generate the payload for each TU set
+    payload = (uint8_t **)malloc(num_TU_sets * sizeof(uint8_t *));
+    payloadLengths = (uint32_t *)malloc(num_TU_sets * sizeof(uint32_t));
+    for(int i=0 ; i<num_TU_sets ; i++)
+    {
+        // print TU set header
+        payloadLengths[i] = extractVideoCount(tuSetHeaders[i]);
+        printf("Payload Length: %d\n", payloadLengths[i]);
+        payload[i] = (uint8_t *)malloc(payloadLengths[i] * sizeof(uint8_t));
+
+        bytesToHexString(tuSetHeaders[i], 4, outputHex + bytes * 2);
+        bytes += 4;
+        bytesToHexString(payload[i], payloadLengths[i], outputHex + bytes * 2);
+        for(int i=0 ; i<payloadLengths[i] ; i++)
+        {
+            unsigned char dummy[1] = { (unsigned char)i };
+            bytesToHexString(dummy, 1, outputHex + bytes * 2);
+            bytes += 1;
+        }
+        free(tuSetHeaders[i]);
+    }
+
+    free(tuSetHeaders);  
+    free(payload);
+    free(payloadLengths);
 
     // Print the final packet
     printf("%s\n", outputHex);
-    }
 }
 
 int VDP_GEN(int argc, char *argv[])
@@ -189,11 +207,16 @@ int VDP_GEN(int argc, char *argv[])
     uint8_t HopID = atoi(argv[1]);
     uint32_t USB4_header = generate_Tunneled_VDP_Header(Length, HopID);
 
+    // ---------------------------------------------------
+    // --------------- Generate Packet -------------------
+    // ---------------------------------------------------
+    generate_Tunneled_VD_Packet(USB4_header, TU_set_headers, num_TU_sets);
+
     return 0;
 }
 
-// int main(int argc, char *argv[])
-// {
-//     VDP_GEN(argc, argv); // Need the parameters
-//     return 0;
-// }
+int main(int argc, char *argv[])
+{
+    VDP_GEN(argc, argv); // Need the parameters
+    return 0;
+}
