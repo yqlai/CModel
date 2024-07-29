@@ -6,9 +6,8 @@ Format: <Packet type> <Param 1> <Param 2> ... <Param n>
 Packet types:
 	1. MSA <Fill Count> <HopID>
 	2. BSP <SR> <CP> <Fill Count>
-	3. VDP <Number of TU sets> <Params of Header_1> <Params of Header_2> ... <Params of Header_n>
-	4. SDP <Number of TU sets> <Params of Header_1> <Params of Header_2> ... <Params of Header_n>
-
+	3. VDP 	<HopID>	    <EOC_1>  <TU_type_1>  <L_1>   <Fill_Count_1> <Video_Count_1> ... <EOC_n> <TU_type_n> <L_n> <Fill_Count_n> <Video_Count_n>
+	4. SDP 	<HopID>  <EFC/ND_1>  <NSS_1>     <NSE_1> <L_1> <Fill_Count_1> <Secondary_Count_1> ... <EFC/ND_n> <NSS_n> <NSE_n> <L_n> <Fill_Count_n> <Secondary_Count_n>
 ###### Example ######
 	MSA 982 2
 	MSA 189 7
