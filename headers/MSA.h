@@ -14,7 +14,7 @@
 uint8_t calculate_hec(uint32_t);
 uint8_t calculate_ecc(uint32_t);
 void hexStringToByteArray_MSA(const char *, unsigned char *, int);
-void printByteArrayToFile(unsigned char *, int, FILE* ); 
+void printByteArrayToFile(unsigned char *, int, FILE*, int); 
 
 
 uint32_t generate_tunneled_MSA_packet_header(uint8_t);

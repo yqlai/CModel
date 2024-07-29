@@ -10,10 +10,26 @@ void hexStringToBytes(const char* hexString, unsigned char* byteArray) {
 }
 
 // Utility function to convert byte array back to hex string
-void bytesToHexString(const unsigned char* byteArray, int length, char* hexString) {
+void bytesToHexString(const unsigned char* byteArray, int length, char* hexString, FILE* file, int isHeader) {
+    static int ind_VDP = 0;
     for (int i = 0; i < length; i++) {
         sprintf(hexString + (i * 2), "%02X", byteArray[i]);
+        if(file)
+        {
+            if (ind_VDP % 4 == 0)
+            {
+                fprintf(file, "  %02X", 1);
+                fprintf(file, "  %02X", isHeader);
+            }
+
+            fprintf(file, "  %02X", byteArray[i]);
+            ind_VDP++;
+
+            if (ind_VDP % 4 == 0)
+                fprintf(file, "\n");
+        }
     }
+    if (isHeader == 1) ind_VDP = 0;
 }
 
 // Parse and extract Video Count from TU set header
@@ -113,7 +129,7 @@ uint32_t generate_Tunneled_VDP_Header(uint32_t Length, uint8_t HopID)
     return USB4_header;
 }
 
-void generate_Tunneled_VD_Packet(uint32_t USB4_header, uint32_t *TU_set_headers, size_t num_TU_sets)
+void generate_Tunneled_VD_Packet(uint32_t USB4_header, uint32_t *TU_set_headers, size_t num_TU_sets, FILE *file)
 {
     uint8_t tunHeader[4];
     uint8_t **tuSetHeaders;
@@ -142,7 +158,7 @@ void generate_Tunneled_VD_Packet(uint32_t USB4_header, uint32_t *TU_set_headers,
 
     printf("Total Packet Length: %d\n", totalPacketLength);
     char outputHex[totalPacketLength * 2 + 1];
-    bytesToHexString(tunHeader, 4, outputHex);
+    bytesToHexString(tunHeader, 4, outputHex, file, 1);
     int bytes = 4;
 
     // Generate the payload for each TU set
@@ -153,17 +169,25 @@ void generate_Tunneled_VD_Packet(uint32_t USB4_header, uint32_t *TU_set_headers,
         // print TU set header
         payloadLengths[i] = extractVideoCount(tuSetHeaders[i]);
         printf("Payload Length: %d\n", payloadLengths[i]);
-        payload[i] = (uint8_t *)malloc(payloadLengths[i] * sizeof(uint8_t));
 
-        bytesToHexString(tuSetHeaders[i], 4, outputHex + bytes * 2);
+        bytesToHexString(tuSetHeaders[i], 4, outputHex + bytes * 2, file, 1);
         bytes += 4;
-        bytesToHexString(payload[i], payloadLengths[i], outputHex + bytes * 2);
-        for(int i=0 ; i<payloadLengths[i] ; i++)
+        for(int j=0 ; j<payloadLengths[i] ; j++)
         {
-            unsigned char dummy[1] = { (unsigned char)i };
-            bytesToHexString(dummy, 1, outputHex + bytes * 2);
+            unsigned char dummy[1] = { (unsigned char)j };
+            bytesToHexString(dummy, 1, outputHex + bytes * 2, file, 0);
             bytes += 1;
         }
+        
+        // Allign the payload to 4 bytes
+        for(int j=0 ; j<(((payloadLengths[i] + 3) & ~3) - payloadLengths[i]) ; j++)
+        {
+            unsigned char dummy[1] = { 0 };
+            bytesToHexString(dummy, 1, outputHex + bytes * 2, file, 0);
+            bytes += 1;
+        }
+
+        printf("\n");
         free(tuSetHeaders[i]);
     }
 
@@ -173,6 +197,7 @@ void generate_Tunneled_VD_Packet(uint32_t USB4_header, uint32_t *TU_set_headers,
 
     // Print the final packet
     printf("%s\n", outputHex);
+    printf("Finished generating the packet.\n");
 }
 
 int VDP_GEN(int argc, char *argv[])
@@ -210,7 +235,8 @@ int VDP_GEN(int argc, char *argv[])
     // ---------------------------------------------------
     // --------------- Generate Packet -------------------
     // ---------------------------------------------------
-    generate_Tunneled_VD_Packet(USB4_header, TU_set_headers, num_TU_sets);
+    FILE *file = fopen("results/VDP.txt", "wb");
+    generate_Tunneled_VD_Packet(USB4_header, TU_set_headers, num_TU_sets, file);
 
     return 0;
 }

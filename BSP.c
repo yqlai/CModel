@@ -1,6 +1,6 @@
 # include "headers/BSP.h"
 
-uint8_t calculateHEC(uint32_t header) {
+uint8_t calculateHEC(uint32_t header){
     uint8_t data[4];
     for (int i = 0; i < 4; i++) {
         data[i] = (header >> (24 - i * 8)) & 0xFF;
@@ -48,6 +48,23 @@ void hexStringToByteArray(const char *hexString, uint8_t *byteArray, size_t arra
         pos += 2;
     }
 }
+
+void printByteArrayToFile_BSP(unsigned char *byteArray, int byteArraySize, FILE* file, int isHeader) {
+    static int ind_MSA = 0;
+    for (int i = 0; i < byteArraySize; i++) {
+        if(ind_MSA % 4 == 0)
+        {
+            fprintf(file, "  %02X", 1);
+            fprintf(file, "  %02X", isHeader);
+        }
+
+        fprintf(file, "  %02x ", byteArray[i]);
+        ind_MSA++;
+
+        if(ind_MSA % 4 == 0)
+            fprintf(file, "\n");
+    }
+} 
 
 // Generate a payload sequentially starting from 00
 void generatePayload(uint8_t *payload, size_t payloadLength) {
@@ -114,15 +131,19 @@ void generate_BS_packet(uint32_t tunHeader, uint32_t blankStartHeader, const cha
     }
 
     // Output the Tunneled Packet
-    for (size_t i = 0; i < 4; i++) {
-        fprintf(file, "%02X ", tunHeaderArr[i]);
-    }
-    for (size_t i = 0; i < 4; i++) {
-        fprintf(file, "%02X ", blankStartHeaderArr[i]);
-    }
-    for (size_t i = 0; i < payloadLength; i++) {
-        fprintf(file, "%02X ", payload[i]);
-    }
+    // for (size_t i = 0; i < 4; i++) {
+    //     fprintf(file, "%02X ", tunHeaderArr[i]);
+    // }
+    // for (size_t i = 0; i < 4; i++) {
+    //     fprintf(file, "%02X ", blankStartHeaderArr[i]);
+    // }
+    // for (size_t i = 0; i < payloadLength; i++) {
+    //     fprintf(file, "%02X ", payload[i]);
+    // }
+
+    printByteArrayToFile_BSP(tunHeaderArr, 4, file, 1);
+    printByteArrayToFile_BSP(blankStartHeaderArr, 4, file, 1);
+    printByteArrayToFile_BSP(payload, payloadLength, file, 0);
 
     fclose(file);
 }
@@ -139,8 +160,8 @@ void BSP_GEN(const char* SRString, const char* CPString, const char* FillCountSt
     generate_BS_packet(tunHeader, blankStartHeader, filename);
 }
 
-// int main()
-// {
-//     BSP_GEN("1", "0", "100", "results/BSP.txt");
-//     return 0;
-// }
+int main()
+{
+    BSP_GEN("1", "0", "100", "results/BSP.txt");
+    return 0;
+}

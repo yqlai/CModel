@@ -23,6 +23,8 @@ uint8_t calculateHEC(uint32_t);
 uint8_t calculateECC(uint32_t);
 
 void hexStringToByteArray(const char *, uint8_t *, size_t);
+void printByteArrayToFile_BSP(unsigned char *, int, FILE*, int);
+
 void generatePayload(uint8_t *, size_t);
 uint32_t generate_tunneled_BS_packet_header();
 uint32_t generate_BS_packet_header(uint8_t, uint8_t, uint32_t);

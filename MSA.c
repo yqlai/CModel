@@ -35,9 +35,20 @@ void hexStringToByteArray_MSA(const char *hexString, unsigned char *byteArray, i
     }
 }
 
-void printByteArrayToFile(unsigned char *byteArray, int byteArraySize, FILE* file) {
+void printByteArrayToFile(unsigned char *byteArray, int byteArraySize, FILE* file, int isHeader) {
+    static int ind_MSA = 0;
     for (int i = 0; i < byteArraySize; i++) {
-        fprintf(file, "%02x ", byteArray[i]);
+        if(ind_MSA % 4 == 0)
+        {
+            fprintf(file, "  %02X", 1);
+            fprintf(file, "  %02X", isHeader);
+        }
+
+        fprintf(file, "  %02x ", byteArray[i]);
+        ind_MSA++;
+
+        if(ind_MSA % 4 == 0)
+            fprintf(file, "\n");
     }
 }
 
@@ -125,9 +136,9 @@ void generate_MSA_packet(uint32_t tunneledPacketHeader, uint32_t msaHeader, cons
         printf("Error opening file.\n");
         return;
     }
-    printByteArrayToFile(tunneledPacketHeaderArr, TUNNELED_PACKET_HEADER_SIZE, file);
-    printByteArrayToFile(msaHeaderArr, MSA_HEADER_SIZE, file);
-    printByteArrayToFile(payload, MSA_PAYLOAD_SIZE, file);
+    printByteArrayToFile(tunneledPacketHeaderArr, TUNNELED_PACKET_HEADER_SIZE, file, 1);
+    printByteArrayToFile(msaHeaderArr, MSA_HEADER_SIZE, file, 1);
+    printByteArrayToFile(payload, MSA_PAYLOAD_SIZE, file, 0);
     fclose(file);
 }
 
@@ -149,8 +160,8 @@ void MSAP_GEN(const char* fillCountString, const char* hopIDString, const char* 
     generate_MSA_packet(Tunneled_MSA_Packet_Header, MSA_Packet_Header, filename);
 }
 
-// int main()
-// {
-//     MSAP_GEN("100", "3", "results/MSA.txt");
-//     return 0;
-// }
+int main()
+{
+    MSAP_GEN("100", "3", "results/MSA.txt");
+    return 0;
+}
