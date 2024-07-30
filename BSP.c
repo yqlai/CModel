@@ -1,44 +1,6 @@
 # include "headers/BSP.h"
 
-uint8_t calculateHEC(uint32_t header){
-    uint8_t data[4];
-    for (int i = 0; i < 4; i++) {
-        data[i] = (header >> (24 - i * 8)) & 0xFF;
-    }
 
-    uint8_t crc = 0;
-    for (int i = 0; i < 3; i++) {
-        crc ^= data[i];
-        for (int j = 0; j < 8; j++) {
-            if (crc & 0x80)
-                crc = (crc << 1) ^ ECC_POLY;
-            else
-                crc <<= 1;
-        }
-    }
-    crc ^= ECC_XOROUT;
-    return crc;
-}
-
-uint8_t calculateECC(uint32_t header) {
-    uint8_t data[4];
-    for (int i = 0; i < 4; i++) {
-        data[i] = (header >> (24 - i * 8)) & 0xFF;
-    }
-
-    uint8_t crc = 0;
-    for (int i = 1; i < 4; i++) {
-        crc ^= data[i];
-        for (int j = 0; j < 8; j++) {
-            if (crc & 0x80)
-                crc = (crc << 1) ^ ECC_POLY;
-            else
-                crc <<= 1;
-        }
-    }
-    crc ^= 0x00; // XOROUT value is defined as 0x00 for the ECC calculation.
-    return crc;
-}
 
 // Converts a hex string to a byte array
 void hexStringToByteArray(const char *hexString, uint8_t *byteArray, size_t arrayLength) {

@@ -1,49 +1,18 @@
 #include "headers/SDP.h"
-
-
-// Utility function to convert a string of hex digits into a byte array
-void hexStringToBytes(const char* hexString, unsigned char* byteArray) {
-    while (*hexString) {
-        sscanf(hexString, "%2hhx", byteArray++);
-        hexString += 2;
-    }
-}
-
-// Utility function to convert byte array back to hex string
-void bytesToHexString(const unsigned char* byteArray, int length, char* hexString, FILE* file, int isHeader) {
-    static int ind_SDP = 0;
-    for (int i = 0; i < length; i++) {
-        sprintf(hexString + (i * 2), "%02X", byteArray[i]);
-        if(file)
-        {
-            if (ind_SDP % 4 == 0)
-            {
-                fprintf(file, "%04X", 1);
-                fprintf(file, "%04X", isHeader);
-            }
-
-            fprintf(file, "  %04X", byteArray[i]);
-            ind_SDP++;
-
-            if (ind_SDP % 4 == 0)
-                fprintf(file, "\n");
-        }
-    }
-    if (isHeader == 1) ind_SDP = 0;
-}
+#include "headers/utils.h"
 
 // Parse and extract Video Count from TU set header
-int extractVideoCount(const unsigned char* tuSetHeader) {
+int extractSecondaryCount(const unsigned char* tuSetHeader) {
     int videoCount = (tuSetHeader[2] & 0x3F);  // Extract bits [13:8]
     if (videoCount == 0) videoCount = 64;
     return videoCount;
 }
 
 // Parse and calculate the total video data length
-int calculateTotalVideoDataLength(int totalTuSets, const unsigned char** tuSetHeaders) {
+int calculateTotalSecondaryDataLength(int totalTuSets, const unsigned char** tuSetHeaders) {
     int totalVideoDataLength = 0;
     for (int i = 0; i < totalTuSets; i++) {
-        totalVideoDataLength += extractVideoCount(tuSetHeaders[i]);
+        totalVideoDataLength += extractSecondaryCount(tuSetHeaders[i]);
     }
     return totalVideoDataLength;
 }
@@ -154,7 +123,7 @@ void generate_Tunneled_SD_Packet(uint32_t USB4_header, uint32_t *TU_set_headers,
     }
 
     // Calculate the total number of bytes for the payload
-    int totalVideoDataLength = calculateTotalVideoDataLength(num_TU_sets, (const unsigned char**)tuSetHeaders);
+    int totalVideoDataLength = calculateTotalSecondaryDataLength(num_TU_sets, (const unsigned char**)tuSetHeaders);
     int totalPacketLength = 4 + (num_TU_sets * 4) + totalVideoDataLength;  // 4 bytes for Tunneled Packet Header + TU headers + Video data
     tunHeader[2] = totalPacketLength - 4;  // Exclude the Tunneled Packet Header length
 
@@ -169,10 +138,10 @@ void generate_Tunneled_SD_Packet(uint32_t USB4_header, uint32_t *TU_set_headers,
     for(int i=0 ; i<num_TU_sets ; i++)
     {
         // print TU set header
-        payloadLengths[i] = extractVideoCount(tuSetHeaders[i]);
+        payloadLengths[i] = extractSecondaryCount(tuSetHeaders[i]);
         printf("Payload Length: %d\n", payloadLengths[i]);
 
-        bytesToHexString(tuSetHeaders[i], 4, outputHex + bytes * 2, file, 1);
+        bytesToHexString(tuSetHeaders[i], 4, outputHex + bytes * 2, file, 0);
         bytes += 4;
         for(int j=0 ; j<payloadLengths[i] ; j++)
         {

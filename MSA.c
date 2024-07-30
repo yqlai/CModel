@@ -137,7 +137,7 @@ void generate_MSA_packet(uint32_t tunneledPacketHeader, uint32_t msaHeader, cons
         return;
     }
     printByteArrayToFile(tunneledPacketHeaderArr, TUNNELED_PACKET_HEADER_SIZE, file, 1);
-    printByteArrayToFile(msaHeaderArr, MSA_HEADER_SIZE, file, 1);
+    printByteArrayToFile(msaHeaderArr, MSA_HEADER_SIZE, file, 0);
     printByteArrayToFile(payload, MSA_PAYLOAD_SIZE, file, 0);
     fclose(file);
 }

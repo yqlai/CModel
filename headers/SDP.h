@@ -20,13 +20,8 @@
 #define HEC_XOR_OUT 0x55
 #define ECC_INIT 0x00
 
-void hexStringToBytes(const char*, unsigned char*);
-void bytesToHexString(const unsigned char*, int, char*, FILE*, int);
-int extractVideoCount(const unsigned char*);
-int calculateTotalVideoDataLength(int, const unsigned char**);
-void fillPayload(unsigned char*, int);
-uint8_t calculate_HEC(uint32_t);
-uint8_t calculate_ECC(uint32_t);
+int extractSecondaryCount(const unsigned char*);
+int calculateTotalSecondaryDataLength(int, const unsigned char**);
 uint32_t generate_TU_set_Header(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
 uint32_t *generate_TU_set_Headers(int, char*[]);
 uint32_t generate_Tunneled_SDP_Header(uint32_t, uint8_t);

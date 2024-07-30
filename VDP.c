@@ -1,4 +1,5 @@
 #include "headers/VDP.h"
+#include "headers/utils.h"
 
 
 // Utility function to convert a string of hex digits into a byte array
@@ -80,14 +81,7 @@ uint8_t calculate_ECC(uint32_t header)
     return ecc;
 }
 
-// Fill the payload with incremental values (00, 01, 02, etc.)
-void fillPayload(unsigned char* payload, int length) {
-    for (int i = 0; i < length; i++) {
-        payload[i] = i & 0xFF;
-    }
-}
-
-uint32_t generate_TU_set_Header(uint32_t EOC, uint32_t TU_type, uint32_t L, uint32_t Fill_Count, uint32_t Video_Count)
+uint32_t generate_VDP_TU_set_Header(uint32_t EOC, uint32_t TU_type, uint32_t L, uint32_t Fill_Count, uint32_t Video_Count)
 {
     // Construct TU set Header
     uint32_t TU_set_header = ((calculate_ECC(HEC_INIT) & 0xFF) << 0) |
@@ -99,7 +93,7 @@ uint32_t generate_TU_set_Header(uint32_t EOC, uint32_t TU_type, uint32_t L, uint
     return TU_set_header;
 }
 
-uint32_t *generate_TU_set_Headers(int argc, char *argv[])
+uint32_t *generate_VDP_TU_set_Headers(int argc, char *argv[])
 {
     size_t num_TU_sets = (argc - 2) / 5;
     uint32_t *TU_set_headers = (uint32_t *)malloc(num_TU_sets * sizeof(uint32_t));
@@ -111,7 +105,7 @@ uint32_t *generate_TU_set_Headers(int argc, char *argv[])
         uint32_t Fill_Count = atoi(argv[5 + i*5]);
         uint32_t Video_Count = atoi(argv[6 + i*5]);
 
-        TU_set_headers[i] = generate_TU_set_Header(EOC, TU_type, L, Fill_Count, Video_Count);
+        TU_set_headers[i] = generate_VDP_TU_set_Header(EOC, TU_type, L, Fill_Count, Video_Count);
     }
     return TU_set_headers;
 }
@@ -170,7 +164,7 @@ void generate_Tunneled_VD_Packet(uint32_t USB4_header, uint32_t *TU_set_headers,
         payloadLengths[i] = extractVideoCount(tuSetHeaders[i]);
         printf("Payload Length: %d\n", payloadLengths[i]);
 
-        bytesToHexString(tuSetHeaders[i], 4, outputHex + bytes * 2, file, 1);
+        bytesToHexString(tuSetHeaders[i], 4, outputHex + bytes * 2, file, 0);
         bytes += 4;
         for(int j=0 ; j<payloadLengths[i] ; j++)
         {
@@ -222,7 +216,7 @@ int VDP_GEN(int argc, char *argv[])
     // --------------- TU Set Header ---------------------
     // ---------------------------------------------------
 
-    uint32_t *TU_set_headers = generate_TU_set_Headers(argc, argv);
+    uint32_t *TU_set_headers = generate_VDP_TU_set_Headers(argc, argv);
 
     // ---------------------------------------------------
     // ----------- USB4 Tunneled Packet Header -----------
