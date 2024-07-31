@@ -13,14 +13,12 @@
 
 uint8_t calculate_hec(uint32_t);
 uint8_t calculate_ecc(uint32_t);
-void hexStringToByteArray_MSA(const char *, unsigned char *, int);
 void printByteArrayToFile(unsigned char *, int, FILE*, int); 
 
-
-uint32_t generate_tunneled_MSA_packet_header(uint8_t);
+uint32_t generate_tunneled_MSA_packet_header();
 uint32_t generate_MSA_packet_header(uint32_t);
-void generate_MSA_packet(uint32_t, uint32_t, const char*);
+void generate_MSA_packet(uint32_t, uint32_t, FILE*);
 
-void MSAP_GEN(const char*, const char*, const char*);
+void MSAP_GEN(const char*, FILE *file);
 
 # endif

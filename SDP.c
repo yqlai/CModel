@@ -17,49 +17,10 @@ int calculateTotalSecondaryDataLength(int totalTuSets, const unsigned char** tuS
     return totalVideoDataLength;
 }
 
-// Helper function to calculate HEC
-uint8_t calculate_HEC(uint32_t header)
-{
-    uint8_t hec = HEC_INIT;
-    for (int i = 23; i >= 0; --i)
-    {
-        uint8_t bit = ((header >> i) & 1) ^ ((hec >> 7) & 1);
-        hec <<= 1;
-        if (bit)
-        {
-            hec ^= 0x07;
-        }
-    }
-    return hec ^ HEC_XOR_OUT;
-}
-
-// Helper function to calculate ECC
-uint8_t calculate_ECC(uint32_t header)
-{
-    uint8_t ecc = ECC_INIT;
-    for (int i = 23; i >= 0; --i)
-    {
-        uint8_t bit = ((header >> i) & 1) ^ ((ecc >> 7) & 1);
-        ecc <<= 1;
-        if (bit)
-        {
-            ecc ^= 0x07;
-        }
-    }
-    return ecc;
-}
-
-// Fill the payload with incremental values (00, 01, 02, etc.)
-void fillPayload(unsigned char* payload, int length) {
-    for (int i = 0; i < length; i++) {
-        payload[i] = i & 0xFF;
-    }
-}
-
 uint32_t generate_TU_set_Header(uint32_t EFC_ND, uint32_t NSS, uint32_t NSE, uint32_t L, uint32_t Fill_Count, uint32_t Secondary_Count)
 {
     // Construct TU set Header
-    uint32_t TU_set_header = ((calculate_ECC(HEC_INIT) & 0xFF) << 0) |
+    uint32_t TU_set_header = ((calculateECC(HEC_INIT) & 0xFF) << 0) |
                              ((Secondary_Count & 0x3F) << 8) |
                              ((Fill_Count & 0x3FFF) << 14) |
                              ((L & 0x1) << 28) |
@@ -75,27 +36,28 @@ uint32_t *generate_TU_set_Headers(int argc, char *argv[])
     uint32_t *TU_set_headers = (uint32_t *)malloc(num_TU_sets * sizeof(uint32_t));
     for(int i=0 ; i<num_TU_sets ; i++)
     {
-        uint32_t EFC_ND = atoi(argv[2 + i*5]);
-        uint32_t NSS = atoi(argv[3 + i*5]);
-        uint32_t NSE = atoi(argv[4 + i*5]);
-        uint32_t L = atoi(argv[5 + i*5]);
-        uint32_t Fill_Count = atoi(argv[6 + i*5]);
-        uint32_t Secondary_Count = atoi(argv[7 + i*5]);
+        uint32_t EFC_ND = atoi(argv[1 + i*5]);
+        uint32_t NSS = atoi(argv[2 + i*5]);
+        uint32_t NSE = atoi(argv[3 + i*5]);
+        uint32_t L = atoi(argv[4 + i*5]);
+        uint32_t Fill_Count = atoi(argv[5 + i*5]);
+        uint32_t Secondary_Count = atoi(argv[6 + i*5]);
 
         TU_set_headers[i] = generate_TU_set_Header(EFC_ND, NSS, NSE, L, Fill_Count, Secondary_Count);
     }
     return TU_set_headers;
 }
 
-uint32_t generate_Tunneled_SDP_Header(uint32_t Length, uint8_t HopID)
+uint32_t generate_Tunneled_SDP_Header(uint32_t Length)
 {
+    uint8_t HopID = HOPID_DEFAULT;
     uint32_t USB4_header = (HEC_INIT) |
                            (Length << 8) |
                            (HopID << 16) |
                            (RESERVED << 23) |
                            (SUPP_ID << 27) |
                            (PDF_SECONDARY_DATA << 28);
-    uint8_t HEC = calculate_HEC(USB4_header);
+    uint8_t HEC = calculateHEC(USB4_header);
     USB4_header |= HEC;
     return USB4_header;
 }
@@ -171,7 +133,14 @@ void generate_Tunneled_SD_Packet(uint32_t USB4_header, uint32_t *TU_set_headers,
     printf("Finished generating the packet.\n");
 }
 
-int SDP_GEN(int argc, char *argv[])
+/**
+ * Generate a Video Data Packet
+ * @param argc Number of arguments
+ * @param argv Strings: SDP <EFC/ND_1> <NSS_1> <NSE_1> <L_1> <Fill_Count_1> <Secondary_Count_1> ... <EFC/ND_n> <NSS_n> <NSE_n> <L_n> <Fill_Count_n> <Secondary_Count_n>
+ * @param file File to save the packet to
+ * 
+*/
+int SDP_GEN(int argc, char *argv[], FILE* file)
 {
     if (argc == 1)
     {
@@ -180,13 +149,13 @@ int SDP_GEN(int argc, char *argv[])
     }
 
     size_t num_TU_sets = 0;
-    if ((argc - 2) % 6 != 0)
+    if ((argc - 1) % 6 != 0)
     {
         fprintf(stderr, "Error: Invalid number of arguments.\n");
         fprintf(stderr, "Usage: %s <HopID> <EFC/ND_1> <NSS_1> <NSE_1> <L_1> <Fill_Count_1> <Secondary_Count_1> ... <EFC/ND_n> <NSS_n> <NSE_n> <L_n> <Fill_Count_n> <Secondary_Count_n>\n", argv[0]);
         return 1;
     }
-    else num_TU_sets = (argc - 2) / 6;
+    else num_TU_sets = (argc - 1) / 6;
 
     // ---------------------------------------------------
     // --------------- TU Set Header ---------------------
@@ -199,20 +168,18 @@ int SDP_GEN(int argc, char *argv[])
     // ---------------------------------------------------
     
     uint32_t Length = 0; // Calculated in the payload generation
-    uint8_t HopID = atoi(argv[1]);
-    uint32_t USB4_header = generate_Tunneled_SDP_Header(Length, HopID);
+    uint32_t USB4_header = generate_Tunneled_SDP_Header(Length);
 
     // ---------------------------------------------------
     // --------------- Generate Packet -------------------
     // ---------------------------------------------------
-    FILE *file = fopen("results/SDP.txt", "wb");
     generate_Tunneled_SD_Packet(USB4_header, TU_set_headers, num_TU_sets, file);
 
     return 0;
 }
 
-int main(int argc, char *argv[])
-{
-    SDP_GEN(argc, argv); // Need the parameters
-    return 0;
-}
+// int main(int argc, char *argv[])
+// {
+//     SDP_GEN(argc, argv); // Need the parameters
+//     return 0;
+// }

@@ -8,11 +8,11 @@
 
 #define ECC_POLY 0x07
 #define ECC_XOROUT 0x55
+#define HOPID_DEFAULT 0
 
 uint8_t calculateHEC(uint32_t);
 uint8_t calculateECC(uint32_t);
 
-void hexStringToBytes(const char*, unsigned char*);
 void bytesToHexString(const unsigned char*, int, char*, FILE*, int);
 
 void fillPayload(unsigned char*, int);

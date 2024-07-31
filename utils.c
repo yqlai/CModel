@@ -40,14 +40,6 @@ uint8_t calculateECC(uint32_t header) {
     return crc;
 }
 
-// Utility function to convert a string of hex digits into a byte array
-void hexStringToBytes(const char* hexString, unsigned char* byteArray) {
-    while (*hexString) {
-        sscanf(hexString, "%2hhx", byteArray++);
-        hexString += 2;
-    }
-}
-
 // Utility function to convert byte array back to hex string
 void bytesToHexString(const unsigned char* byteArray, int length, char* hexString, FILE* file, int isHeader) {
     static int ind_SDP = 0;

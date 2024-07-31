@@ -1,4 +1,5 @@
 # include "headers/MSA.h"
+# include "headers/utils.h"
 
 // Function to calculate HEC (Header Error Control)
 uint8_t calculate_hec(uint32_t header) {
@@ -27,14 +28,6 @@ uint8_t calculate_ecc(uint32_t header) {
     return ecc;
 }
 
-void hexStringToByteArray_MSA(const char *hexString, unsigned char *byteArray, int byteArraySize) {
-    int hexStringLength = strlen(hexString);
-    int i;
-    for (i = 0; i < hexStringLength / 2 && i < byteArraySize; i++) {
-        sscanf(hexString + 2*i, "%2hhx", &byteArray[i]);
-    }
-}
-
 void printByteArrayToFile(unsigned char *byteArray, int byteArraySize, FILE* file, int isHeader) {
     static int ind_MSA = 0;
     for (int i = 0; i < byteArraySize; i++) {
@@ -44,7 +37,7 @@ void printByteArrayToFile(unsigned char *byteArray, int byteArraySize, FILE* fil
             fprintf(file, "  %02X", isHeader);
         }
 
-        fprintf(file, "  %02x ", byteArray[i]);
+        fprintf(file, "  %02x", byteArray[i]);
         ind_MSA++;
 
         if(ind_MSA % 4 == 0)
@@ -55,13 +48,13 @@ void printByteArrayToFile(unsigned char *byteArray, int byteArraySize, FILE* fil
 /**
  * Generates a tunneled MSA (Main Stream Attribute) packet header.
  *
- * @param hopID The hop ID to be set in the tunneled packet header.
  * @return The generated tunneled packet header.
  */
-uint32_t generate_tunneled_MSA_packet_header(uint8_t hopID)
+uint32_t generate_tunneled_MSA_packet_header()
 {
     // Tunneled Packet Header Fields
     uint8_t pdf = 3;                     // Protocol Defined Field for Main Stream Attribute Packet
+    uint8_t hopID = HOPID_DEFAULT;       // Hop ID: Default value
     uint8_t suppID = 0;                  // Supplemental ID: Shall be set to 0b
     uint8_t reserved = 0;                // Reserved: Fixed to 0
     uint8_t length = 0x28;               // Length: Fixed to 0x28 for a Main Stream Attribute Packet
@@ -96,7 +89,7 @@ uint32_t generate_MSA_packet_header(uint32_t fillCount)
     return msapHeader;
 }
 
-void generate_MSA_packet(uint32_t tunneledPacketHeader, uint32_t msaHeader, const char* filename)
+void generate_MSA_packet(uint32_t tunneledPacketHeader, uint32_t msaHeader, FILE *file)
 {
     const int TUNNELED_PACKET_HEADER_SIZE = 4;
     const int MSA_HEADER_SIZE = 4;
@@ -106,16 +99,6 @@ void generate_MSA_packet(uint32_t tunneledPacketHeader, uint32_t msaHeader, cons
     uint8_t tunneledPacketHeaderArr[4] = {0};
     uint8_t msaHeaderArr[4] = {0};
     uint8_t payload[36] = {0};
-
-    printf("Tunneled Packet Header [0]: %02x\n", ((tunneledPacketHeader >> 24) & 0xff));
-    printf("Tunneled Packet Header [1]: %02x\n", ((tunneledPacketHeader >> 16) & 0xff));
-    printf("Tunneled Packet Header [2]: %02x\n", ((tunneledPacketHeader >> 8) & 0xff));
-    printf("Tunneled Packet Header [3]: %02x\n", (tunneledPacketHeader & 0xff));
-
-    printf("MSA Header [0]: %02x\n", ((msaHeader >> 24) & 0xff));
-    printf("MSA Header [1]: %02x\n", ((msaHeader >> 16) & 0xff));
-    printf("MSA Header [2]: %02x\n", ((msaHeader >> 8) & 0xff));
-    printf("MSA Header [3]: %02x\n", (msaHeader & 0xff));
 
     tunneledPacketHeaderArr[0] = (tunneledPacketHeader >> 24) & 0xFF;
     tunneledPacketHeaderArr[1] = (tunneledPacketHeader >> 16) & 0xFF;
@@ -131,7 +114,6 @@ void generate_MSA_packet(uint32_t tunneledPacketHeader, uint32_t msaHeader, cons
         payload[i] = i;
     }
     
-    FILE *file = fopen(filename, "w");
     if (file == NULL) {
         printf("Error opening file.\n");
         return;
@@ -146,22 +128,20 @@ void generate_MSA_packet(uint32_t tunneledPacketHeader, uint32_t msaHeader, cons
  * Generates an MSA packet with the given fill count and hop ID, and saves it to a file.
  *
  * @param fillCountString The fill count as a string.
- * @param hopIDString The hop ID as a string.
- * @param filename The name of the file to save the generated packet.
+ * @param file The file to save the MSA packet to.
  */
-void MSAP_GEN(const char* fillCountString, const char* hopIDString, const char* filename)
+void MSAP_GEN(const char* fillCountString, FILE* file)
 {
     uint32_t fillCount = (uint32_t)strtol(fillCountString, NULL, 10);
-    uint32_t hopID = (uint32_t)strtol(hopIDString, NULL, 10);
     
-    uint32_t Tunneled_MSA_Packet_Header = generate_tunneled_MSA_packet_header(hopID);
+    uint32_t Tunneled_MSA_Packet_Header = generate_tunneled_MSA_packet_header();
     uint32_t MSA_Packet_Header = generate_MSA_packet_header(fillCount);
     
-    generate_MSA_packet(Tunneled_MSA_Packet_Header, MSA_Packet_Header, filename);
+    generate_MSA_packet(Tunneled_MSA_Packet_Header, MSA_Packet_Header, file);
 }
 
-int main()
-{
-    MSAP_GEN("100", "3", "results/MSA.txt");
-    return 0;
-}
+// int main()
+// {
+//     MSAP_GEN("100", file);
+//     return 0;
+// }

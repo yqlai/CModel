@@ -1,15 +1,5 @@
 # include "headers/BSP.h"
-
-
-
-// Converts a hex string to a byte array
-void hexStringToByteArray(const char *hexString, uint8_t *byteArray, size_t arrayLength) {
-    const char *pos = hexString;
-    for (size_t i = 0; i < arrayLength; i++) {
-        sscanf(pos, "%2hhx", &byteArray[i]);
-        pos += 2;
-    }
-}
+# include "headers/utils.h"
 
 void printByteArrayToFile_BSP(unsigned char *byteArray, int byteArraySize, FILE* file, int isHeader) {
     static int ind_MSA = 0;
@@ -20,7 +10,7 @@ void printByteArrayToFile_BSP(unsigned char *byteArray, int byteArraySize, FILE*
             fprintf(file, "  %02X", isHeader);
         }
 
-        fprintf(file, "  %02x ", byteArray[i]);
+        fprintf(file, "  %02x", byteArray[i]);
         ind_MSA++;
 
         if(ind_MSA % 4 == 0)
@@ -61,7 +51,7 @@ uint32_t generate_BS_packet_header(uint8_t SR, uint8_t CP, uint32_t FillCount)
     return BlankStartHeader;
 }
 
-void generate_BS_packet(uint32_t tunHeader, uint32_t blankStartHeader, const char* filename)
+void generate_BS_packet(uint32_t tunHeader, uint32_t blankStartHeader, FILE *file)
 {
     uint32_t tunHeader_t;
     uint32_t blankStartHeader_t;
@@ -86,7 +76,6 @@ void generate_BS_packet(uint32_t tunHeader, uint32_t blankStartHeader, const cha
     generatePayload(payload, payloadLength);
 
 
-    FILE *file = fopen(filename, "w");
     if(file == NULL) {
         printf("Error opening file.\n");
         return;
@@ -104,13 +93,22 @@ void generate_BS_packet(uint32_t tunHeader, uint32_t blankStartHeader, const cha
     // }
 
     printByteArrayToFile_BSP(tunHeaderArr, 4, file, 1);
-    printByteArrayToFile_BSP(blankStartHeaderArr, 4, file, 1);
+    printByteArrayToFile_BSP(blankStartHeaderArr, 4, file, 0);
     printByteArrayToFile_BSP(payload, payloadLength, file, 0);
 
     fclose(file);
 }
 
-void BSP_GEN(const char* SRString, const char* CPString, const char* FillCountString, const char* filename)
+/**
+ * 
+ * Generate a Blank Start Packet
+ * @param SRString SR as a string
+ * @param CPString CP as a string
+ * @param FillCountString Fill Count as a string
+ * @param file File to save the packet to
+ * 
+*/
+void BSP_GEN(const char* SRString, const char* CPString, const char* FillCountString, FILE* file)
 {
     uint8_t SR = (uint8_t) strtol(SRString, NULL, 10);
     uint8_t CP = (uint8_t) strtol(CPString, NULL, 10);
@@ -119,11 +117,11 @@ void BSP_GEN(const char* SRString, const char* CPString, const char* FillCountSt
     uint32_t tunHeader = generate_tunneled_BS_packet_header();
     uint32_t blankStartHeader = generate_BS_packet_header(SR, CP, FillCount);
 
-    generate_BS_packet(tunHeader, blankStartHeader, filename);
+    generate_BS_packet(tunHeader, blankStartHeader, file);
 }
 
-int main()
-{
-    BSP_GEN("1", "0", "100", "results/BSP.txt");
-    return 0;
-}
+// int main()
+// {
+//     BSP_GEN("1", "0", "100", "results/BSP.txt");
+//     return 0;
+// }

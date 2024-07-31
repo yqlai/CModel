@@ -24,9 +24,9 @@ int extractSecondaryCount(const unsigned char*);
 int calculateTotalSecondaryDataLength(int, const unsigned char**);
 uint32_t generate_TU_set_Header(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
 uint32_t *generate_TU_set_Headers(int, char*[]);
-uint32_t generate_Tunneled_SDP_Header(uint32_t, uint8_t);
+uint32_t generate_Tunneled_SDP_Header(uint32_t);
 void generate_Tunneled_SD_Packet(uint32_t, uint32_t*, size_t, FILE*);
-int SDP_GEN(int, char*[]);
+int SDP_GEN(int, char*[], FILE*);
 
 
 # endif
