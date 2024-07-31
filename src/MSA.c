@@ -1,20 +1,34 @@
 # include "headers/MSA.h"
 # include "headers/utils.h"
 
-void printByteArrayToFile(unsigned char *byteArray, int byteArraySize, FILE* file, int isHeader) {
-    static int ind_MSA = 0;
-    for (int i = 0; i < byteArraySize; i++) {
-        if(ind_MSA % 4 == 0)
+void get_MSA_payload_format(enum PAYLOAD_TYPE payloadFormat[], int lane)
+{
+    switch(lane)
+    {
+        case 1:
         {
-            fprintf(file, "  %02X", 1);
-            fprintf(file, "  %02X", isHeader);
+            enum PAYLOAD_TYPE MSA_PAYLOAD_FORMAT_LANE_1[12] = {VBID, VBID, VBID, VBID, MVID, MVID, MVID, MVID, MAUD, MAUD, MAUD, MAUD};
+            for(int i=0 ; i<12 ; i++)
+                payloadFormat[i] = MSA_PAYLOAD_FORMAT_LANE_1[i];
+            return;
         }
-
-        fprintf(file, "  %02x", byteArray[i]);
-        ind_MSA++;
-
-        if(ind_MSA % 4 == 0)
-            fprintf(file, "\n");
+        case 2:
+        {
+            enum PAYLOAD_TYPE MSA_PAYLOAD_FORMAT_LANE_2[12] = {VBID, VBID, MVID, MVID, MAUD, MAUD, VBID, VBID, MVID, MVID, MAUD, MAUD};
+            for(int i=0 ; i<12 ; i++)
+                payloadFormat[i] = MSA_PAYLOAD_FORMAT_LANE_2[i];
+            return;
+        }
+        case 4:
+        {
+            enum PAYLOAD_TYPE MSA_PAYLOAD_FORMAT_LANE_4[12] = {VBID, MVID, MAUD, VBID, MVID, MAUD, VBID, MVID, MAUD, VBID, MVID, MAUD};
+            for(int i=0 ; i<12 ; i++)
+                payloadFormat[i] = MSA_PAYLOAD_FORMAT_LANE_4[i];
+            return;
+        }
+        default:
+            payloadFormat = NULL;
+            return; 
     }
 }
 

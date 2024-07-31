@@ -10,6 +10,13 @@
 #define ECC_XOROUT 0x55
 #define HOPID_DEFAULT 0
 
+enum PAYLOAD_TYPE {
+    ZERO,
+    VBID,
+    MVID,
+    MAUD
+};
+
 uint8_t calculateHEC(uint32_t);
 uint8_t calculateECC(uint32_t);
 
