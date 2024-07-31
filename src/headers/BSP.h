@@ -17,8 +17,6 @@
 #define HOPID 0x01 // This is a default value, can be modified based on the context
 #define LENGTH_HEADER 0x0C // Length of Blank Start Packet Header is 12 bytes (0x0C)
 
-void printByteArrayToFile_BSP(unsigned char *, int, FILE*, int);
-
 void generatePayload(uint8_t *, size_t);
 uint32_t generate_tunneled_BS_packet_header();
 uint32_t generate_BS_packet_header(uint8_t, uint8_t, uint32_t);

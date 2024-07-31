@@ -1,20 +1,22 @@
 CC = gcc
 RM = del
-SRCS = $(filter-out main.c, $(wildcard *.c))
-OBJS = $(SRCS:.c=.o)
-EXES = $(SRCS:.c=.exe)
+SRCS = $(wildcard src/*.c)
+OBJS = $(patsubst src/%.c, obj/%.o, $(SRCS))
+EXES = $(patsubst src/%.c, obj/%.exe, $(SRCS))
 CFLAGS = -nostartfiles -Wall -Wno-unused-variable
 
 all: main
 
-%.o: %.c headers/%.h
+obj/%.o: src/%.c src/headers/%.h
 	$(CC) -c $< -o $@ $(CFLAGS)
 
-main: $(OBJS) main.o
-	$(CC) -c main.c -o main.o
+obj/main.o: src/main.c
+	$(CC) -c src/main.c -o obj/main.o
+
+main: $(OBJS)
 	$(CC) -o $@ $^
 
 clean:
 	$(RM) $(OBJS)
 	$(RM) $(EXES)
-	$(RM) main
+	$(RM) obj/main.o

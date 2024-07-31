@@ -1,23 +1,5 @@
 # include "headers/BSP.h"
 # include "headers/utils.h"
-
-void printByteArrayToFile_BSP(unsigned char *byteArray, int byteArraySize, FILE* file, int isHeader) {
-    static int ind_MSA = 0;
-    for (int i = 0; i < byteArraySize; i++) {
-        if(ind_MSA % 4 == 0)
-        {
-            fprintf(file, "  %02X", 1);
-            fprintf(file, "  %02X", isHeader);
-        }
-
-        fprintf(file, "  %02x", byteArray[i]);
-        ind_MSA++;
-
-        if(ind_MSA % 4 == 0)
-            fprintf(file, "\n");
-    }
-} 
-
 // Generate a payload sequentially starting from 00
 void generatePayload(uint8_t *payload, size_t payloadLength) {
     for (size_t i = 0; i < payloadLength; i++) {
@@ -81,22 +63,9 @@ void generate_BS_packet(uint32_t tunHeader, uint32_t blankStartHeader, FILE *fil
         return;
     }
 
-    // Output the Tunneled Packet
-    // for (size_t i = 0; i < 4; i++) {
-    //     fprintf(file, "%02X ", tunHeaderArr[i]);
-    // }
-    // for (size_t i = 0; i < 4; i++) {
-    //     fprintf(file, "%02X ", blankStartHeaderArr[i]);
-    // }
-    // for (size_t i = 0; i < payloadLength; i++) {
-    //     fprintf(file, "%02X ", payload[i]);
-    // }
-
-    printByteArrayToFile_BSP(tunHeaderArr, 4, file, 1);
-    printByteArrayToFile_BSP(blankStartHeaderArr, 4, file, 0);
-    printByteArrayToFile_BSP(payload, payloadLength, file, 0);
-
-    fclose(file);
+    bytesToHexString(tunHeaderArr, 4, file, 1);
+    bytesToHexString(blankStartHeaderArr, 4, file, 0);
+    bytesToHexString(payload, payloadLength, file, 0);
 }
 
 /**

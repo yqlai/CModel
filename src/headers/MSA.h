@@ -11,10 +11,6 @@
 # ifndef __MSA_H
 # define __MSA_H
 
-uint8_t calculate_hec(uint32_t);
-uint8_t calculate_ecc(uint32_t);
-void printByteArrayToFile(unsigned char *, int, FILE*, int); 
-
 uint32_t generate_tunneled_MSA_packet_header();
 uint32_t generate_MSA_packet_header(uint32_t);
 void generate_MSA_packet(uint32_t, uint32_t, FILE*);

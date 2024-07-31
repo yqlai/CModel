@@ -41,10 +41,9 @@ uint8_t calculateECC(uint32_t header) {
 }
 
 // Utility function to convert byte array back to hex string
-void bytesToHexString(const unsigned char* byteArray, int length, char* hexString, FILE* file, int isHeader) {
+void bytesToHexString(const unsigned char* byteArray, int length, FILE* file, int isHeader) {
     static int ind_SDP = 0;
     for (int i = 0; i < length; i++) {
-        sprintf(hexString + (i * 2), "%02X", byteArray[i]);
         if(file)
         {
             if (ind_SDP % 4 == 0)

@@ -13,7 +13,7 @@
 uint8_t calculateHEC(uint32_t);
 uint8_t calculateECC(uint32_t);
 
-void bytesToHexString(const unsigned char*, int, char*, FILE*, int);
+void bytesToHexString(const unsigned char*, int, FILE*, int);
 
 void fillPayload(unsigned char*, int);
 

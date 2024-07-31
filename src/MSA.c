@@ -1,33 +1,6 @@
 # include "headers/MSA.h"
 # include "headers/utils.h"
 
-// Function to calculate HEC (Header Error Control)
-uint8_t calculate_hec(uint32_t header) {
-    uint8_t hec = 0x00;
-    uint8_t poly = 0x07; 
-    for (int bit = 31; bit >= 8; bit--) {
-        hec ^= ((header >> bit) & 1) << 7;
-        for (int i = 7; i >= 1; i--) {
-            hec = (hec >> 1) ^ ((hec & 0x01) ? poly : 0x00);
-        }
-    }
-    hec ^= 0x55;  // XorOut: 0x55
-    return hec;
-}
-
-// Function to calculate ECC (Error Correction Code)
-uint8_t calculate_ecc(uint32_t header) {
-    uint8_t ecc = 0x00;
-    uint8_t poly = 0x07;
-    for (int bit = 31; bit >= 8; bit--) {
-        ecc ^= ((header >> bit) & 1) << 7;
-        for (int i = 7; i >= 1; i--) {
-            ecc = (ecc >> 1) ^ ((ecc & 0x01) ? poly : 0x00);
-        }
-    }
-    return ecc;
-}
-
 void printByteArrayToFile(unsigned char *byteArray, int byteArraySize, FILE* file, int isHeader) {
     static int ind_MSA = 0;
     for (int i = 0; i < byteArraySize; i++) {
@@ -47,6 +20,7 @@ void printByteArrayToFile(unsigned char *byteArray, int byteArraySize, FILE* fil
 
 /**
  * Generates a tunneled MSA (Main Stream Attribute) packet header.
+ * No parameters needed.
  *
  * @return The generated tunneled packet header.
  */
@@ -68,7 +42,7 @@ uint32_t generate_tunneled_MSA_packet_header()
     tunneledPacketHeader |= length << 8;
 
     // Calculate the HEC (Header Error Control)
-    uint8_t hec = calculate_hec(tunneledPacketHeader);
+    uint8_t hec = calculateECC(tunneledPacketHeader);
     tunneledPacketHeader |= hec;
 
     return tunneledPacketHeader;
@@ -83,7 +57,7 @@ uint32_t generate_MSA_packet_header(uint32_t fillCount)
     msapHeader |= fillCount << 8;
 
     // Calculate the ECC (Error Correction Code)
-    uint8_t ecc = calculate_ecc(msapHeader);
+    uint8_t ecc = calculateECC(msapHeader);
     msapHeader |= ecc;
 
     return msapHeader;
@@ -118,10 +92,9 @@ void generate_MSA_packet(uint32_t tunneledPacketHeader, uint32_t msaHeader, FILE
         printf("Error opening file.\n");
         return;
     }
-    printByteArrayToFile(tunneledPacketHeaderArr, TUNNELED_PACKET_HEADER_SIZE, file, 1);
-    printByteArrayToFile(msaHeaderArr, MSA_HEADER_SIZE, file, 0);
-    printByteArrayToFile(payload, MSA_PAYLOAD_SIZE, file, 0);
-    fclose(file);
+    bytesToHexString(tunneledPacketHeaderArr, TUNNELED_PACKET_HEADER_SIZE, file, 1);
+    bytesToHexString(msaHeaderArr, MSA_HEADER_SIZE, file, 0);
+    bytesToHexString(payload, MSA_PAYLOAD_SIZE, file, 0);
 }
 
 /**
