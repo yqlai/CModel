@@ -8,9 +8,10 @@
 
 # endif
 
+
+
 # ifndef __VDP_H
 # define __VDP_H
-
 
 #define PDF_VIDEO_DATA 1
 #define SUPP_ID 0

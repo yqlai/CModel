@@ -31,7 +31,7 @@ uint32_t generate_VDP_TU_set_Header(uint32_t EOC, uint32_t TU_type, uint32_t L, 
 
 uint32_t *generate_VDP_TU_set_Headers(int argc, char *argv[])
 {
-    size_t num_TU_sets = (argc - 2) / 5;
+    size_t num_TU_sets = (argc - 1) / 5;
     uint32_t *TU_set_headers = (uint32_t *)malloc(num_TU_sets * sizeof(uint32_t));
     for(int i=0 ; i<num_TU_sets ; i++)
     {
@@ -169,9 +169,3 @@ int VDP_GEN(int argc, char *argv[], FILE* file)
 
     return 0;
 }
-
-// int main(int argc, char *argv[])
-// {
-//     VDP_GEN(argc, argv); // Need the parameters
-//     return 0;
-// }

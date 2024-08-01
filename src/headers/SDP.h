@@ -20,6 +20,7 @@
 #define HEC_XOR_OUT 0x55
 #define ECC_INIT 0x00
 
+
 int extractSecondaryCount(const unsigned char*);
 int calculateTotalSecondaryDataLength(int, const unsigned char**);
 uint32_t generate_TU_set_Header(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);

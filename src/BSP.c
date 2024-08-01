@@ -7,21 +7,21 @@ void get_BSP_payload_format(enum PAYLOAD_TYPE payloadFormat[], int lane)
     {
         case 1:
         {
-            enum PAYLOAD_TYPE BSP_PAYLOAD_FORMAT_LANE_1[12] = {VBID, VBID, VBID, VBID, MVID, MVID, MVID, MVID, MAUD, MAUD, MAUD, MAUD};
+            enum PAYLOAD_TYPE BSP_PAYLOAD_FORMAT_LANE_1[12] = {VBID, VBID, VBID, VBID, MVID_7_0, MVID_7_0, MVID_7_0, MVID_7_0, MAUD_7_0, MAUD_7_0, MAUD_7_0, MAUD_7_0};
             for(int i=0 ; i<12 ; i++)
                 payloadFormat[i] = BSP_PAYLOAD_FORMAT_LANE_1[i];
             return;
         }
         case 2:
         {
-            enum PAYLOAD_TYPE BSP_PAYLOAD_FORMAT_LANE_2[12] = {VBID, VBID, MVID, MVID, MAUD, MAUD, VBID, VBID, MVID, MVID, MAUD, MAUD};
+            enum PAYLOAD_TYPE BSP_PAYLOAD_FORMAT_LANE_2[12] = {VBID, VBID, MVID_7_0, MVID_7_0, MAUD_7_0, MAUD_7_0, VBID, VBID, MVID_7_0, MVID_7_0, MAUD_7_0, MAUD_7_0};
             for(int i=0 ; i<12 ; i++)
                 payloadFormat[i] = BSP_PAYLOAD_FORMAT_LANE_2[i];
             return;
         }
         case 4:
         {
-            enum PAYLOAD_TYPE BSP_PAYLOAD_FORMAT_LANE_4[12] = {VBID, MVID, MAUD, VBID, MVID, MAUD, VBID, MVID, MAUD, VBID, MVID, MAUD};
+            enum PAYLOAD_TYPE BSP_PAYLOAD_FORMAT_LANE_4[12] = {VBID, MVID_7_0, MAUD_7_0, VBID, MVID_7_0, MAUD_7_0, VBID, MVID_7_0, MAUD_7_0, VBID, MVID_7_0, MAUD_7_0};
             for(int i=0 ; i<12 ; i++)
                 payloadFormat[i] = BSP_PAYLOAD_FORMAT_LANE_4[i];
             return;
@@ -33,7 +33,7 @@ void get_BSP_payload_format(enum PAYLOAD_TYPE payloadFormat[], int lane)
 }
 
 // Generate a payload sequentially starting from 00
-void generatePayload(uint8_t *payload, size_t payloadLength) {
+void generate_BSP_Payload(uint8_t *payload, size_t payloadLength) {
     int lane = 1;
 
     enum PAYLOAD_TYPE payloadFormat[12];
@@ -45,24 +45,6 @@ void generatePayload(uint8_t *payload, size_t payloadLength) {
 
     for (size_t i = 0; i < payloadLength; i++)
         payload[i] = payloadFormat[i] & 0xFF;
-
-    // switch(lane)
-    // {
-    //     case 1:
-    //         for (size_t i = 0; i < payloadLength; i++)
-    //             payload[i] = BSP_PAYLOAD_FORMAT_LANE_1[i] & 0xFF; // Keep incrementing from 00
-    //         break;
-    //     case 2:
-    //         for (size_t i = 0; i < payloadLength; i++)
-    //             payload[i] = BSP_PAYLOAD_FORMAT_LANE_2[i] & 0xFF; // Keep incrementing from 00
-    //         break;
-    //     case 4:
-    //         for (size_t i = 0; i < payloadLength; i++)
-    //             payload[i] = BSP_PAYLOAD_FORMAT_LANE_4[i] & 0xFF; // Keep incrementing from 00
-    //         break;
-    //     default:
-    //         printf("Invalid lane configuration.\n");
-    // }
 }
 
 uint32_t generate_tunneled_BS_packet_header() {
@@ -113,7 +95,7 @@ void generate_BS_packet(uint32_t tunHeader, uint32_t blankStartHeader, FILE *fil
     blankStartHeaderArr[3] = blankStartHeader & 0xFF;
     
     // Generate the payload sequentially
-    generatePayload(payload, payloadLength);
+    generate_BSP_Payload(payload, payloadLength);
 
 
     if(file == NULL) {
@@ -146,9 +128,3 @@ void BSP_GEN(const char* SRString, const char* CPString, const char* FillCountSt
 
     generate_BS_packet(tunHeader, blankStartHeader, file);
 }
-
-// int main()
-// {
-//     BSP_GEN("1", "0", "100", "results/BSP.txt");
-//     return 0;
-// }

@@ -14,6 +14,7 @@
 # include "utils.h"
 
 void get_MSA_payload_format(enum PAYLOAD_TYPE[], int);
+void generate_MSA_Payload(uint8_t *, size_t);
 
 uint32_t generate_tunneled_MSA_packet_header();
 uint32_t generate_MSA_packet_header(uint32_t);

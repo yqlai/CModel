@@ -16,6 +16,9 @@ obj/main.o: src/main.c
 main: $(OBJS)
 	$(CC) -o $@ $^
 
+run:
+	./main
+
 clean:
 	$(RM) $(OBJS)
 	$(RM) $(EXES)

@@ -32,7 +32,7 @@ uint32_t generate_TU_set_Header(uint32_t EFC_ND, uint32_t NSS, uint32_t NSE, uin
 
 uint32_t *generate_TU_set_Headers(int argc, char *argv[])
 {
-    size_t num_TU_sets = (argc - 2) / 5;
+    size_t num_TU_sets = (argc - 1) / 6;
     uint32_t *TU_set_headers = (uint32_t *)malloc(num_TU_sets * sizeof(uint32_t));
     for(int i=0 ; i<num_TU_sets ; i++)
     {
@@ -171,9 +171,3 @@ int SDP_GEN(int argc, char *argv[], FILE* file)
 
     return 0;
 }
-
-// int main(int argc, char *argv[])
-// {
-//     SDP_GEN(argc, argv); // Need the parameters
-//     return 0;
-// }

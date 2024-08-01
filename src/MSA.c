@@ -7,22 +7,47 @@ void get_MSA_payload_format(enum PAYLOAD_TYPE payloadFormat[], int lane)
     {
         case 1:
         {
-            enum PAYLOAD_TYPE MSA_PAYLOAD_FORMAT_LANE_1[12] = {VBID, VBID, VBID, VBID, MVID, MVID, MVID, MVID, MAUD, MAUD, MAUD, MAUD};
-            for(int i=0 ; i<12 ; i++)
+            enum PAYLOAD_TYPE MSA_PAYLOAD_FORMAT_LANE_1[36] = { MVID_23_16,     MVID_15_8,      MVID_7_0,       HTOTAL_15_8,
+                                                                HTOTAL_7_0,     VTOTAL_15_8,    VTOTAL_7_0,     HSP_HSW_14_8,
+                                                                HSW_7_0,        MVID_23_16,     MVID_15_8,      MVID_7_0,
+                                                                HSTART_15_8,    HSTART_7_0,     VSTART_15_8,    VSTART_7_0,
+                                                                VSP_VSW_14_8,   VSW_7_0,        MVID_23_16,     MVID_15_8,
+                                                                MVID_7_0,       HWIDTH_15_8,    HWIDTH_7_0,     VHEIGHT_15_8,
+                                                                VHEIGHT_7_0,    ZERO,           ZERO,           MVID_23_16,
+                                                                MVID_15_8,      MVID_7_0,       NVID_23_16,     NVID_15_8,
+                                                                NVID_7_0,       MISC0_7_0,      MISC1_7_0,      ZERO};
+            
+            for(int i=0 ; i<36 ; i++)
                 payloadFormat[i] = MSA_PAYLOAD_FORMAT_LANE_1[i];
             return;
         }
         case 2:
         {
-            enum PAYLOAD_TYPE MSA_PAYLOAD_FORMAT_LANE_2[12] = {VBID, VBID, MVID, MVID, MAUD, MAUD, VBID, VBID, MVID, MVID, MAUD, MAUD};
-            for(int i=0 ; i<12 ; i++)
+            enum PAYLOAD_TYPE MSA_PAYLOAD_FORMAT_LANE_2[36] = { MVID_23_16,     MVID_23_16,     MVID_15_8,      MVID_15_8,
+                                                                MVID_7_0,       MVID_7_0,       HTOTAL_15_8,    HSTART_15_8,
+                                                                HTOTAL_7_0,     HSTART_7_0,     VTOTAL_15_8,    VSTART_15_8, 
+                                                                VTOTAL_7_0,     VSTART_7_0,     HSP_HSW_14_8,   VSP_VSW_14_8,
+                                                                HSW_7_0,        VSW_7_0,        MVID_23_16,     MVID_23_16, 
+                                                                MVID_15_8,      MVID_15_8,      MVID_7_0,       MVID_7_0, 
+                                                                HWIDTH_15_8,    NVID_23_16,     HWIDTH_7_0,     NVID_15_8,
+                                                                VHEIGHT_15_8,   NVID_7_0,       VHEIGHT_7_0,    MISC0_7_0,
+                                                                ZERO,           MISC1_7_0,      ZERO,           ZERO };
+            for(int i=0 ; i<36 ; i++)
                 payloadFormat[i] = MSA_PAYLOAD_FORMAT_LANE_2[i];
             return;
         }
         case 4:
         {
-            enum PAYLOAD_TYPE MSA_PAYLOAD_FORMAT_LANE_4[12] = {VBID, MVID, MAUD, VBID, MVID, MAUD, VBID, MVID, MAUD, VBID, MVID, MAUD};
-            for(int i=0 ; i<12 ; i++)
+            enum PAYLOAD_TYPE MSA_PAYLOAD_FORMAT_LANE_4[36] = { MVID_23_16,     MVID_23_16,     MVID_23_16,     MVID_23_16,
+                                                                MVID_15_8,      MVID_15_8,      MVID_15_8,      MVID_15_8, 
+                                                                MVID_7_0,       MVID_7_0,       MVID_7_0,       MVID_7_0, 
+                                                                HTOTAL_15_8,    HSTART_15_8,    HWIDTH_15_8,    NVID_23_16, 
+                                                                HTOTAL_7_0,     HSTART_7_0,     HWIDTH_7_0,     NVID_15_8, 
+                                                                VTOTAL_15_8,    VSTART_15_8,    VHEIGHT_15_8,   NVID_7_0,
+                                                                VTOTAL_7_0,     VSTART_7_0,     VHEIGHT_7_0,    MISC0_7_0, 
+                                                                HSP_HSW_14_8,   VSP_VSW_14_8,   ZERO,           MISC1_7_0, 
+                                                                HSW_7_0,        VSW_7_0,        ZERO,           ZERO };
+            for(int i=0 ; i<36 ; i++)
                 payloadFormat[i] = MSA_PAYLOAD_FORMAT_LANE_4[i];
             return;
         }
@@ -30,6 +55,21 @@ void get_MSA_payload_format(enum PAYLOAD_TYPE payloadFormat[], int lane)
             payloadFormat = NULL;
             return; 
     }
+}
+
+// Generate a payload sequentially starting from 00
+void generate_MSA_Payload(uint8_t *payload, size_t payloadLength) {
+    int lane = 1;
+
+    enum PAYLOAD_TYPE *payloadFormat = (enum PAYLOAD_TYPE *)malloc(payloadLength * sizeof(enum PAYLOAD_TYPE));
+    get_MSA_payload_format(payloadFormat, lane);
+    if(payloadFormat == NULL) {
+        printf("Invalid lane configuration.\n");
+        return;
+    }
+
+    for (size_t i = 0; i < payloadLength; i++)
+        payload[i] = payloadFormat[i] & 0xFF;
 }
 
 /**
@@ -98,9 +138,10 @@ void generate_MSA_packet(uint32_t tunneledPacketHeader, uint32_t msaHeader, FILE
     msaHeaderArr[2] = (msaHeader >> 8) & 0xFF;
     msaHeaderArr[3] = msaHeader & 0xFF;
 
-    for (int i = 0; i < MSA_PAYLOAD_SIZE; i++) {
-        payload[i] = i;
-    }
+    // for (int i = 0; i < MSA_PAYLOAD_SIZE; i++) {
+    //     payload[i] = i;
+    // }
+    generate_MSA_Payload(payload, MSA_PAYLOAD_SIZE);
     
     if (file == NULL) {
         printf("Error opening file.\n");
@@ -126,9 +167,3 @@ void MSAP_GEN(const char* fillCountString, FILE* file)
     
     generate_MSA_packet(Tunneled_MSA_Packet_Header, MSA_Packet_Header, file);
 }
-
-// int main()
-// {
-//     MSAP_GEN("100", file);
-//     return 0;
-// }
