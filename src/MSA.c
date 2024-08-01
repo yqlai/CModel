@@ -58,9 +58,7 @@ void get_MSA_payload_format(enum PAYLOAD_TYPE payloadFormat[], int lane)
 }
 
 // Generate a payload sequentially starting from 00
-void generate_MSA_Payload(uint8_t *payload, size_t payloadLength) {
-    int lane = 1;
-
+void generate_MSA_Payload(uint8_t *payload, size_t payloadLength, int lane) {
     enum PAYLOAD_TYPE *payloadFormat = (enum PAYLOAD_TYPE *)malloc(payloadLength * sizeof(enum PAYLOAD_TYPE));
     get_MSA_payload_format(payloadFormat, lane);
     if(payloadFormat == NULL) {
@@ -81,10 +79,10 @@ void generate_MSA_Payload(uint8_t *payload, size_t payloadLength) {
 uint32_t generate_tunneled_MSA_packet_header()
 {
     // Tunneled Packet Header Fields
-    uint8_t pdf = 3;                     // Protocol Defined Field for Main Stream Attribute Packet
+    uint8_t pdf = PDF_MAIN_STREAM_ATTRIBUTE_PACKET;                     // Protocol Defined Field for Main Stream Attribute Packet
     uint8_t hopID = HOPID_DEFAULT;       // Hop ID: Default value
-    uint8_t suppID = 0;                  // Supplemental ID: Shall be set to 0b
-    uint8_t reserved = 0;                // Reserved: Fixed to 0
+    uint8_t suppID = SUPP_ID_DEFAULT;    // Supplemental ID: Shall be set to 0b
+    uint8_t reserved = RESERVED_DEFAULT; // Reserved: Fixed to 0
     uint8_t length = 0x28;               // Length: Fixed to 0x28 for a Main Stream Attribute Packet
     uint32_t tunneledPacketHeader = 0;   // Placeholder for Tunnled Packet Header
 
@@ -96,7 +94,7 @@ uint32_t generate_tunneled_MSA_packet_header()
     tunneledPacketHeader |= length << 8;
 
     // Calculate the HEC (Header Error Control)
-    uint8_t hec = calculateECC(tunneledPacketHeader);
+    uint8_t hec = calculateHEC(tunneledPacketHeader);
     tunneledPacketHeader |= hec;
 
     return tunneledPacketHeader;
@@ -117,7 +115,7 @@ uint32_t generate_MSA_packet_header(uint32_t fillCount)
     return msapHeader;
 }
 
-void generate_MSA_packet(uint32_t tunneledPacketHeader, uint32_t msaHeader, FILE *file)
+void generate_MSA_packet(uint32_t tunneledPacketHeader, uint32_t msaHeader, int lane, FILE *file)
 {
     const int TUNNELED_PACKET_HEADER_SIZE = 4;
     const int MSA_HEADER_SIZE = 4;
@@ -138,10 +136,7 @@ void generate_MSA_packet(uint32_t tunneledPacketHeader, uint32_t msaHeader, FILE
     msaHeaderArr[2] = (msaHeader >> 8) & 0xFF;
     msaHeaderArr[3] = msaHeader & 0xFF;
 
-    // for (int i = 0; i < MSA_PAYLOAD_SIZE; i++) {
-    //     payload[i] = i;
-    // }
-    generate_MSA_Payload(payload, MSA_PAYLOAD_SIZE);
+    generate_MSA_Payload(payload, MSA_PAYLOAD_SIZE, lane);
     
     if (file == NULL) {
         printf("Error opening file.\n");
@@ -157,13 +152,15 @@ void generate_MSA_packet(uint32_t tunneledPacketHeader, uint32_t msaHeader, FILE
  *
  * @param fillCountString The fill count as a string.
  * @param file The file to save the MSA packet to.
+ * @param lane The lane number as a string.
  */
-void MSAP_GEN(const char* fillCountString, FILE* file)
+void MSAP_GEN(const char* fillCountString, const char* LaneString, FILE* file)
 {
     uint32_t fillCount = (uint32_t)strtol(fillCountString, NULL, 10);
+    int lane = (int)strtol(LaneString, NULL, 10);
     
     uint32_t Tunneled_MSA_Packet_Header = generate_tunneled_MSA_packet_header();
     uint32_t MSA_Packet_Header = generate_MSA_packet_header(fillCount);
     
-    generate_MSA_packet(Tunneled_MSA_Packet_Header, MSA_Packet_Header, file);
+    generate_MSA_packet(Tunneled_MSA_Packet_Header, MSA_Packet_Header, lane, file);
 }

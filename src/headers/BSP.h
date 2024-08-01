@@ -13,10 +13,6 @@
 
 # include "utils.h"
 
-#define PDF_BLANK_START_PACKET 0x2
-#define SUPPID_TUNNELED_PACKET 0x0  
-#define RESERVED_VALUE 0x0
-#define HOPID 0x01 // This is a default value, can be modified based on the context
 #define LENGTH_HEADER 0x0C // Length of Blank Start Packet Header is 12 bytes (0x0C)
 
 // enum PAYLOAD_TYPE BSP_PAYLOAD_FORMAT_LANE_1[] = {VBID, VBID, VBID, VBID, MVID, MVID, MVID, MVID, MAUD, MAUD, MAUD, MAUD};
@@ -25,11 +21,11 @@
 
 void get_BSP_payload_format(enum PAYLOAD_TYPE[], int);
 
-void generate_BSP_Payload(uint8_t *, size_t);
+void generate_BSP_Payload(uint8_t *, size_t, int);
 uint32_t generate_tunneled_BS_packet_header();
 uint32_t generate_BS_packet_header(uint8_t, uint8_t, uint32_t);
-void generate_BS_packet(uint32_t, uint32_t, FILE*);
-void BSP_GEN(const char*, const char*, const char*, FILE*);
+void generate_BS_packet(uint32_t, uint32_t, int, FILE*);
+void BSP_GEN(const char*, const char*, const char*, const char*, FILE*);
 
 
 # endif

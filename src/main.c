@@ -113,10 +113,10 @@ int main()
         switch(packet.type)
         {
             case PACKET_TYPE_MSA:
-                MSAP_GEN(packet.argv[1], outputfile);
+                MSAP_GEN(packet.argv[1], packet.argv[2], outputfile);
                 break;
             case PACKET_TYPE_BSP:
-                BSP_GEN(packet.argv[1], packet.argv[2], packet.argv[3], outputfile);
+                BSP_GEN(packet.argv[1], packet.argv[2], packet.argv[3], packet.argv[4], outputfile);
                 break;
             case PACKET_TYPE_VDP:
                 VDP_GEN(packet.argc, packet.argv, outputfile);

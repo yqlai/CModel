@@ -3,30 +3,31 @@
 
 // Parse and extract Video Count from TU set header
 int extractSecondaryCount(const unsigned char* tuSetHeader) {
-    int videoCount = (tuSetHeader[2] & 0x3F);  // Extract bits [13:8]
-    if (videoCount == 0) videoCount = 64;
-    return videoCount;
+    int secondaryCount = (tuSetHeader[2] & 0x3F);  // Extract bits [13:8]
+    if (secondaryCount == 0) secondaryCount = 64;
+    return secondaryCount;
 }
 
 // Parse and calculate the total video data length
 int calculateTotalSecondaryDataLength(int totalTuSets, const unsigned char** tuSetHeaders) {
-    int totalVideoDataLength = 0;
+    int totalSecondaryDataLength = 0;
     for (int i = 0; i < totalTuSets; i++) {
-        totalVideoDataLength += extractSecondaryCount(tuSetHeaders[i]);
+        totalSecondaryDataLength += extractSecondaryCount(tuSetHeaders[i]);
     }
-    return totalVideoDataLength;
+    return totalSecondaryDataLength;
 }
 
 uint32_t generate_TU_set_Header(uint32_t EFC_ND, uint32_t NSS, uint32_t NSE, uint32_t L, uint32_t Fill_Count, uint32_t Secondary_Count)
 {
     // Construct TU set Header
-    uint32_t TU_set_header = ((calculateECC(HEC_INIT) & 0xFF) << 0) |
-                             ((Secondary_Count & 0x3F) << 8) |
+    uint32_t TU_set_header = ((Secondary_Count & 0x3F) << 8) |
                              ((Fill_Count & 0x3FFF) << 14) |
                              ((L & 0x1) << 28) |
                              ((NSE & 0x1) << 29) |
                              ((NSS & 0x1) << 30) |
                              ((EFC_ND & 0x1) << 31);
+    TU_set_header |= calculateECC(TU_set_header);
+
     return TU_set_header;
 }
 
@@ -36,12 +37,12 @@ uint32_t *generate_TU_set_Headers(int argc, char *argv[])
     uint32_t *TU_set_headers = (uint32_t *)malloc(num_TU_sets * sizeof(uint32_t));
     for(int i=0 ; i<num_TU_sets ; i++)
     {
-        uint32_t EFC_ND = atoi(argv[1 + i*5]);
-        uint32_t NSS = atoi(argv[2 + i*5]);
-        uint32_t NSE = atoi(argv[3 + i*5]);
-        uint32_t L = atoi(argv[4 + i*5]);
-        uint32_t Fill_Count = atoi(argv[5 + i*5]);
-        uint32_t Secondary_Count = atoi(argv[6 + i*5]);
+        uint32_t EFC_ND = atoi(argv[1 + i*6]);
+        uint32_t NSS = atoi(argv[2 + i*6]);
+        uint32_t NSE = atoi(argv[3 + i*6]);
+        uint32_t L = atoi(argv[4 + i*6]);
+        uint32_t Fill_Count = atoi(argv[5 + i*6]);
+        uint32_t Secondary_Count = atoi(argv[6 + i*6]);
 
         TU_set_headers[i] = generate_TU_set_Header(EFC_ND, NSS, NSE, L, Fill_Count, Secondary_Count);
     }
@@ -54,9 +55,9 @@ uint32_t generate_Tunneled_SDP_Header(uint32_t Length)
     uint32_t USB4_header = (HEC_INIT) |
                            (Length << 8) |
                            (HopID << 16) |
-                           (RESERVED << 23) |
-                           (SUPP_ID << 27) |
-                           (PDF_SECONDARY_DATA << 28);
+                           (RESERVED_DEFAULT << 23) |
+                           (SUPP_ID_DEFAULT << 27) |
+                           (PDF_SECONDARY_DATA_PACKET << 28);
     uint8_t HEC = calculateHEC(USB4_header);
     USB4_header |= HEC;
     return USB4_header;
@@ -87,9 +88,10 @@ void generate_Tunneled_SD_Packet(uint32_t USB4_header, uint32_t *TU_set_headers,
     // Calculate the total number of bytes for the payload
     int totalVideoDataLength = calculateTotalSecondaryDataLength(num_TU_sets, (const unsigned char**)tuSetHeaders);
     int totalPacketLength = 4 + (num_TU_sets * 4) + totalVideoDataLength;  // 4 bytes for Tunneled Packet Header + TU headers + Video data
-    tunHeader[2] = totalPacketLength - 4;  // Exclude the Tunneled Packet Header length
 
-    char outputHex[totalPacketLength * 2 + 1];
+    tunHeader[2] = (totalPacketLength - 4) == 256 ? (totalPacketLength - 4) : 0;  // Exclude the Tunneled Packet Header length
+    tunHeader[3] = calculateHEC((uint32_t)((uint32_t)(tunHeader[0] << 24) | (uint32_t)(tunHeader[1] << 16) | (uint32_t)(tunHeader[2] << 8) | (uint32_t)(0)));
+    
     bytesToHexString(tunHeader, 4, file, 1);
     int bytes = 4;
 

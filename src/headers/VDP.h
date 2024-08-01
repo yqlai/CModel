@@ -13,13 +13,6 @@
 # ifndef __VDP_H
 # define __VDP_H
 
-#define PDF_VIDEO_DATA 1
-#define SUPP_ID 0
-#define RESERVED 0
-#define HEC_INIT 0x00
-#define HEC_XOR_OUT 0x55
-#define ECC_INIT 0x00
-
 int extractVideoCount(const unsigned char*);
 int calculateTotalVideoDataLength(int, const unsigned char**);
 uint32_t generate_VDP_TU_set_Header(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);

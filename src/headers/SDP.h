@@ -13,13 +13,6 @@
 
 # include <stdint.h>
 
-#define PDF_SECONDARY_DATA 4
-#define SUPP_ID 0
-#define RESERVED 0
-#define HEC_INIT 0x00
-#define HEC_XOR_OUT 0x55
-#define ECC_INIT 0x00
-
 
 int extractSecondaryCount(const unsigned char*);
 int calculateTotalSecondaryDataLength(int, const unsigned char**);

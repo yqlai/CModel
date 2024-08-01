@@ -20,12 +20,13 @@ int calculateTotalVideoDataLength(int totalTuSets, const unsigned char** tuSetHe
 uint32_t generate_VDP_TU_set_Header(uint32_t EOC, uint32_t TU_type, uint32_t L, uint32_t Fill_Count, uint32_t Video_Count)
 {
     // Construct TU set Header
-    uint32_t TU_set_header = ((calculateECC(HEC_INIT) & 0xFF) << 0) |
-                             ((Video_Count & 0x3F) << 8) |
+    uint32_t TU_set_header = ((Video_Count & 0x3F) << 8) |
                              ((Fill_Count & 0x3FFF) << 14) |
                              ((L & 0x1) << 28) |
                              ((TU_type & 0x3) << 29) |
                              ((EOC & 0x1) << 31);
+    TU_set_header |= calculateECC(TU_set_header);
+
     return TU_set_header;
 }
 
@@ -49,12 +50,11 @@ uint32_t *generate_VDP_TU_set_Headers(int argc, char *argv[])
 uint32_t generate_Tunneled_VDP_Header(uint32_t Length)
 {
     uint8_t HopID = HOPID_DEFAULT;
-    uint32_t USB4_header = (HEC_INIT) |
-                           (Length << 8) |
+    uint32_t USB4_header = (Length << 8) |
                            (HopID << 16) |
-                           (RESERVED << 23) |
-                           (SUPP_ID << 27) |
-                           (PDF_VIDEO_DATA << 28);
+                           (RESERVED_DEFAULT << 23) |
+                           (SUPP_ID_DEFAULT << 27) |
+                           (PDF_VIDEO_DATA_PACKET << 28);
     uint8_t HEC = calculateHEC(USB4_header);
     USB4_header |= HEC;
     return USB4_header;
@@ -85,9 +85,11 @@ void generate_Tunneled_VD_Packet(uint32_t USB4_header, uint32_t *TU_set_headers,
     // Calculate the total number of bytes for the payload
     int totalVideoDataLength = calculateTotalVideoDataLength(num_TU_sets, (const unsigned char**)tuSetHeaders);
     int totalPacketLength = 4 + (num_TU_sets * 4) + totalVideoDataLength;  // 4 bytes for Tunneled Packet Header + TU headers + Video data
-    tunHeader[2] = totalPacketLength - 4;  // Exclude the Tunneled Packet Header length
+    
+    // Update the total packet length in the Tunneled Packet Header
+    tunHeader[2] = (totalPacketLength - 4) == 256 ? (totalPacketLength - 4) : 0;  // Exclude the Tunneled Packet Header length
+    tunHeader[3] = calculateHEC((uint32_t)((uint32_t)(tunHeader[0] << 24) | (uint32_t)(tunHeader[1] << 16) | (uint32_t)(tunHeader[2] << 8) | (uint32_t)(0)));
 
-    char outputHex[totalPacketLength * 2 + 1];
     bytesToHexString(tunHeader, 4, file, 1);
     int bytes = 4;
 
