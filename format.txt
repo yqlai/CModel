@@ -14,17 +14,17 @@ Packet types:
 	MSA 189 7
 	BSP 1 0 666
 	BSP 1 1 881
-...
+	...
 
 **********   Output(.txt file)   **********
 Description: This file contains the generated packet contents represented in hexadecimal format, with two numbers grouped together.
 Format: <Valid> <Header> <B0> <B1> <B2> <B3>
 
 ###### Example ######
-  11  1 12 34 56 78
-  11  0 90 AB CD EF
-  11  0 12 34 56 78
-  ...
+	11  1 12 34 56 78
+	11  0 90 AB CD EF
+	11  0 12 34 56 78
+	...
 
 Note:
 1. Input Limitation: If the input exceeds the number of bits that can e represented, the exceeding bits will be discarded. e.g. If a byte can only hold a value from 0 to 255 and the value is 300, the resulting value saved will be 300 % 256 = 44.

@@ -19,9 +19,9 @@
 #define PDF_SECONDARY_DATA_PACKET 4
 #define PDF_VIDEO_DATA_PACKET 1
 
-#define HOPID_DEFAULT 0
+#define HOPID_DEFAULT 9
 #define RESERVED_DEFAULT 0
-#define SUPP_ID_DEFAULT 9
+#define SUPP_ID_DEFAULT 0
 
 uint8_t calculateHEC(uint32_t);
 uint8_t calculateECC(uint32_t);
