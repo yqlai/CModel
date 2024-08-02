@@ -138,10 +138,6 @@ void generate_MSA_packet(uint32_t tunneledPacketHeader, uint32_t msaHeader, int 
 
     generate_MSA_Payload(payload, MSA_PAYLOAD_SIZE, lane);
     
-    if (file == NULL) {
-        printf("Error opening file.\n");
-        return;
-    }
     bytesToHexString(tunneledPacketHeaderArr, TUNNELED_PACKET_HEADER_SIZE, file, 1);
     bytesToHexString(msaHeaderArr, MSA_HEADER_SIZE, file, 0);
     bytesToHexString(payload, MSA_PAYLOAD_SIZE, file, 0);

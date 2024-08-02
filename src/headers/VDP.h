@@ -15,6 +15,7 @@
 
 int extractVideoCount(const unsigned char*);
 int calculateTotalVideoDataLength(int, const unsigned char**);
+
 uint32_t generate_VDP_TU_set_Header(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t);
 uint32_t *generate_VDP_TU_set_Headers(int, char*[]);
 uint32_t generate_Tunneled_VDP_Header(uint32_t);

@@ -12,4 +12,4 @@ VDP 0 1 1 100 50 0 1 1 100 41 0 1 1 100 7
 
 # SD Format: SDP <EFC/ND_1> <NSS_1> <NSE_1> <L_1> <Fill_Count_1> <Secondary_Count_1> ... <EFC/ND_n> <NSS_n> <NSE_n> <L_n> <Fill_Count_n> <Secondary_Count_n>
 # Sample SD generation: TU set Header 1 =  {EFC/ND = 1, NSS = 0, NSE = 1, L = 1, Fill Count = 100, Secondary Count = 50} ... 
-SDP 1 0 1 1 100 50 1 0 1 1 100 50 1 0 1 1 100 50 1 0 1 1 100 50 1 0 1 1 100 50 1 0 1 1 100 50 1 0 1 1 100 50 1 0 1 1 100 50 1 0 1 1 100 50 1 0 1 1 100 50
+SDP 1 0 1 1 100 50

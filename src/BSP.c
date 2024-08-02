@@ -101,12 +101,6 @@ void generate_BS_packet(uint32_t tunHeader, uint32_t blankStartHeader, int lane,
     // Generate the payload sequentially
     generate_BSP_Payload(payload, payloadLength, lane);
 
-
-    if(file == NULL) {
-        printf("Error opening file.\n");
-        return;
-    }
-
     bytesToHexString(tunHeaderArr, 4, file, 1);
     bytesToHexString(blankStartHeaderArr, 4, file, 0);
     bytesToHexString(payload, payloadLength, file, 0);

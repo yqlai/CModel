@@ -16,8 +16,8 @@
 #define LENGTH_HEADER 0x10
 
 void get_BSP_payload_format(enum PAYLOAD_TYPE[], int);
-
 void generate_BSP_Payload(uint8_t *, size_t, int);
+
 uint32_t generate_tunneled_BS_packet_header();
 uint32_t generate_BS_packet_header(uint8_t, uint8_t, uint32_t);
 void generate_BS_packet(uint32_t, uint32_t, int, FILE*);
