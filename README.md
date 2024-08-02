@@ -6,7 +6,7 @@ A CModel which simulates the behavior of DPIA
 2. Modified the filename in main function.
 3. Use the following commands:
 
-'''shell
+```shell
 make all
 make run
-'''
+```
