@@ -3,7 +3,7 @@ RM = del
 SRCS = $(wildcard src/*.c)
 OBJS = $(patsubst src/%.c, obj/%.o, $(SRCS))
 EXES = $(patsubst src/%.c, obj/%.exe, $(SRCS))
-CFLAGS = -nostartfiles -Wall -Wno-unused-variable
+CFLAGS = -nostartfiles -Wno-unused-variable
 
 all: main
 
@@ -20,6 +20,5 @@ run:
 	./main
 
 clean:
-	$(RM) $(OBJS)
-	$(RM) $(EXES)
-	$(RM) obj/main.o
+	$(RM) $(patsubst obj/%.o, obj\\%.o, $(OBJS))
+	$(RM) main.exe
