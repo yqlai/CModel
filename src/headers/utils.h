@@ -47,4 +47,6 @@ enum PAYLOAD_TYPE {
     VSP_VSW_14_8,   VSW_7_0,
 };
 
+void print_value_of_PAYLOAD_TYPE();
+
 #endif

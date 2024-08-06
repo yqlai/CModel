@@ -68,3 +68,36 @@ void fillPayload(unsigned char* payload, int length) {
         payload[i] = i & 0xFF;
     }
 }
+
+void print_value_of_PAYLOAD_TYPE()
+{
+    printf("ZERO: %d\t", ZERO);
+    printf("VBID: %d\t", VBID);
+    printf("MVID_23_16: %d\t", MVID_23_16);
+    printf("MVID_15_8: %d\t", MVID_15_8);
+    printf("MVID_7_0: %d\n", MVID_7_0);
+    printf("MAUD_23_16: %d\t", MAUD_23_16);
+    printf("MAUD_15_8: %d\t", MAUD_15_8);
+    printf("MAUD_7_0: %d\t", MAUD_7_0);
+    printf("NVID_23_16: %d\t", NVID_23_16);
+    printf("NVID_15_8: %d\n", NVID_15_8);
+    printf("NVID_7_0: %d\t", NVID_7_0);
+    printf("HTOTAL_15_8: %d\t", HTOTAL_15_8);
+    printf("HTOTAL_7_0: %d\t", HTOTAL_7_0);
+    printf("HSTART_15_8: %d\t", HSTART_15_8);
+    printf("HSTART_7_0: %d\t", HSTART_7_0);
+    printf("HWIDTH_15_8: %d\n", HWIDTH_15_8);
+    printf("HWIDTH_7_0: %d\t", HWIDTH_7_0);
+    printf("VTOTAL_15_8: %d\t", VTOTAL_15_8);
+    printf("VTOTAL_7_0: %d\t", VTOTAL_7_0);
+    printf("VSTART_15_8: %d\t", VSTART_15_8);
+    printf("VSTART_7_0: %d\n", VSTART_7_0);
+    printf("VHEIGHT_15_8: %d\t", VHEIGHT_15_8);
+    printf("VHEIGHT_7_0: %d\t", VHEIGHT_7_0);
+    printf("MISC0_7_0: %d\t", MISC0_7_0);
+    printf("MISC1_7_0: %d\t", MISC1_7_0);
+    printf("HSP_HSW_14_8: %d\n", HSP_HSW_14_8);
+    printf("HSW_7_0: %d\t", HSW_7_0);
+    printf("VSP_VSW_14_8: %d\t", VSP_VSW_14_8);
+    printf("VSW_7_0: %d\n", VSW_7_0);
+}

@@ -1,10 +1,13 @@
+# Lane number
+2
+
 # MSA Format: MSA <Fill Count> <Lane Number>
-# Example: Fill Count = 2, Number of Lanes = 2
-MSA 100 2
+# Example: Fill Count = 2
+MSA 100
 
 # BS Format: BSP <SR> <CP> <Fill Count> <Lane Number>
 # Example: SR = 1, CP = 0, Fill Count = 100
-BSP 1 0 100 4
+BSP 1 0 100
 
 # VD Format: VDP <EOC_1> <TU_type_1> <L_1> <Fill_Count_1> <Video_Count_1> ... <EOC_n> <TU_type_n> <L_n> <Fill_Count_n> <Video_Count_n>
 # Example: TU set Header 1 = {EOC = 0, TU type = 1, L = 1, Fill Count = 100, Video Count = 50} ...

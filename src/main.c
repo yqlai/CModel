@@ -79,6 +79,13 @@ struct Packet parse(const char* input)
     return packet;
 }
 
+int is_comment(const char *line)
+{
+    if(line[0] == '#') return 1;
+    if(line[0] == '\n') return 1;
+    return 0;
+}
+
 int main()
 {
     const char *filename = "sample.txt";
@@ -104,19 +111,30 @@ int main()
         exit(1);
     }
 
+    char lane[500];
+    while(fgets(lane, 500, inputfile) && is_comment(lane));
+    // if lane number is not equal to 1, 2, or 4, set it as 1
+    printf("Lane: %s", lane);
+    if(lane[0] != '1' && lane[0] != '2' && lane[0] != '4')
+    {
+        fprintf(stderr, "Invalid lane number. Setting lane number to 1.\n");
+        strcpy(lane, "1");
+    }
+    else lane[1] = '\0';
+
     char line[500];
     while(fgets(line, 500, inputfile))
     {
-        if (line[0] == '#' || line[0] == '\n') continue;
+        if (is_comment(line)) continue;
         struct Packet packet = parse(line);
         printf("Generate a packet of type: %s\n", PACKETTYPES[packet.type]);
         switch(packet.type)
         {
             case PACKET_TYPE_MSA:
-                MSAP_GEN(packet.argv[1], packet.argv[2], outputfile);
+                MSAP_GEN(packet.argv[1], lane, outputfile);
                 break;
             case PACKET_TYPE_BSP:
-                BSP_GEN(packet.argv[1], packet.argv[2], packet.argv[3], packet.argv[4], outputfile);
+                BSP_GEN(packet.argv[1], packet.argv[2], packet.argv[3], lane, outputfile);
                 break;
             case PACKET_TYPE_VDP:
                 VDP_GEN(packet.argc, packet.argv, outputfile);
